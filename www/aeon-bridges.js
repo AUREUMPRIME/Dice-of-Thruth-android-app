@@ -52,3 +52,28 @@
     console.log("[AEON] bridges ready");
   }, false);
 })();
+
+;/* AEON_FIRST_TTS_GUARD */
+(function(){
+  document.addEventListener('deviceready', function(){
+    var wrapped=false;
+    function wrap(){
+      if(wrapped) return;
+      if(typeof window.AEON_TTS==='function'){
+        wrapped=true;
+        var real=window.AEON_TTS;
+        if(typeof window.__AEON_TTS_SUPPRESS==='undefined'){ window.__AEON_TTS_SUPPRESS=1; }
+        window.AEON_TTS=function(){
+          if(window.__AEON_TTS_LOCK) return false;            // aún en intro
+          if(window.__AEON_TTS_SUPPRESS>0){                    // suprime primera
+            window.__AEON_TTS_SUPPRESS=0;
+            console.log('[TTS] first call suppressed');
+            return false;
+          }
+          return real.apply(this, arguments);
+        };
+      } else { setTimeout(wrap,100); }
+    }
+    wrap();
+  }, {once:true});
+})();

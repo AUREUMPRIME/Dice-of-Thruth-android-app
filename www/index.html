@@ -29,7 +29,22 @@
   </style>
 <style id="last5-dice-pos-override">#last5Dice{top:calc(env(safe-area-inset-top,0px) + 12px) !important}</style>
   <script src="cordova.js"></script>
+<style id="aeon-intro-style">
+#aeon-intro{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center}
+#aeon-intro video{width:100%;height:100%;object-fit:contain;background:#000}
+#aeon-intro .skip{position:absolute;right:16px;bottom:16px;padding:8px 12px;border-radius:12px;background:#111;color:#fff;border:1px solid #444;font:600 12px system-ui}
+</style>
+<style id="aeon-intro-css2">
+/* oculta botón de play inicial y controles en WebView */
+#aeon-intro video::-webkit-media-controls-start-playback-button{ display:none !important; }
+#aeon-intro video::-webkit-media-controls{ display:none !important; }
+video::-webkit-media-controls-enclosure{ display:none !important; }
+</style>
 </head><body class="idle" data-build="20250919133146">
+<div id="aeon-intro" role="dialog" aria-label="Intro" aria-live="off">
+  <video id="aeon-intro-video" src="res/intro/intro.mp4" playsinline autoplay muted preload="auto" poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="></video></video>
+  <button class="skip" id="aeon-intro-skip">SALTAR</button>
+</div>
   <script src="aeon-bridges-pre.js"></script>
   <!-- AEON: puente Cordova TTS/Vibration tras deviceready -->
   <script src="aeon-bridges.js"></script>
@@ -116,15 +131,55 @@
 <script defer src="aeon_tapdots_toggle.js?v=20250922231556"></script>
 
 <script defer src="kill_particles.js?b=20251018T090147Z"></script>
+<script id="aeon-intro-script">
+(function(){
+  // Bloqueo TTS hasta que termine la intro o haya interacción
+  window.__AEON_TTS_LOCK = true;
+  function unlockTTS(){ window.__AEON_TTS_LOCK = false; }
+  function guardAEONTTS(){
+    var tries=0, t=setInterval(function(){
+      tries++;
+      if (typeof window.AEON_TTS === "function"){
+        var real = window.AEON_TTS;
+        window.AEON_TTS = function(){
+          if (window.__AEON_TTS_LOCK){ console.log("[TTS] locked during intro"); return false; }
+          return real.apply(this, arguments);
+        };
+        clearInterval(t);
+      } else if (tries>80){ clearInterval(t); }
+    },125);
+  }
 
+  function hideIntro(){
+    var d=document.getElementById('aeon-intro');
+    if(d) d.style.display='none';
+    unlockTTS();
+  }
 
+  function jingle(){
+    try{
+      var src="/android_asset/www/res/audio/jingle.mp3";
+      if (typeof Media === "function"){ var m=new Media(src,function(){},function(e){console.log("jingle error",e)}); m.play(); }
+      else { new Audio("res/audio/jingle.mp3").play().catch(()=>{}); }
+    }catch(e){ console.log("jingle fail", e); }
+  }
 
+  function start(){
+    guardAEONTTS();
+    var v=document.getElementById('aeon-intro-video');
+    if(v){ v.play().catch(()=>{}); }
+    jingle();
+    // Mantener intro 11s SIEMPRE
+    setTimeout(hideIntro, 11000);
+  }
 
-
-
-
-
-
-
+  // Salto manual desbloquea TTS
+  document.addEventListener('click', function(){ if(window.__AEON_TTS_LOCK) hideIntro(); }, {once:true, capture:true});
+  document.addEventListener('touchstart', function(){ if(window.__AEON_TTS_LOCK) hideIntro(); }, {once:true, capture:true});
+  document.addEventListener('deviceready', start, {once:true});
+  var btn = document.getElementById('aeon-intro-skip');
+  if(btn) btn.addEventListener('click', hideIntro);
+})();
+</script>
 
 
