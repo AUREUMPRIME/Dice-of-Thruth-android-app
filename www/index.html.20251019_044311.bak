@@ -31,9 +31,6 @@
   <script src="cordova.js"></script>
 </head><body class="idle" data-build="20250919133146">
   <script src="aeon-bridges-pre.js"></script>
-  <!-- AEON: puente Cordova TTS/Vibration tras deviceready -->
-  <script src="aeon-bridges.js"></script>
-
 
   <canvas id="bgfx" class="bgfx-canvas"></canvas>
 
@@ -116,7 +113,6 @@
 <script defer src="aeon_tapdots_toggle.js?v=20250922231556"></script>
 
 <script defer src="kill_particles.js?b=20251018T090147Z"></script>
-
 
 
 
