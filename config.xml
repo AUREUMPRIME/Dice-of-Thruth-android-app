@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-16"?>
-<widget id="com.aureumprime.diceofthruth" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.aureumprime.diceofthruth" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
   <name>Dice of Truth</name>
   <description>Sample Apache Cordova App</description>
   <author email="dev@cordova.apache.org" href="https://cordova.apache.org">
@@ -15,5 +15,8 @@
     <icon density="xhdpi" src="resources/android/icon/drawable-xhdpi-icon.png" />
     <icon density="xxhdpi" src="resources/android/icon/drawable-xxhdpi-icon.png" />
     <icon density="xxxhdpi" src="resources/android/icon/drawable-xxxhdpi-icon.png" />
+    <resource-file src="resources/splash/_build/splash_icon.xml" target="app/src/main/res/drawable/splash_icon.xml" />
+    <resource-file src="resources/splash/_build/splash_spin.xml" target="app/src/main/res/animator/splash_spin.xml" />
+    <resource-file src="resources/splash/_build/splash_animated.xml" target="app/src/main/res/drawable/splash_animated.xml" />
   </platform>
-  <preference name="AndroidXEnabled" value="true" />`r`n  <plugin name="cordova-plugin-tts" />`r`n  <plugin name="cordova-plugin-vibration" />`r`n<preference name="MediaPlaybackRequiresUserAction" value="false" xmlns="" /><preference name="AndroidWindowSplashScreenShowDuration" value="0" xmlns="" /><preference name="AndroidWindowSplashScreenBackground" value="#000000" xmlns="" /><preference name="ShowSplashScreenSpinner" value="false" xmlns="" /><preference name="AutoHideSplashScreen" value="true" xmlns="" /><preference name="SplashScreenDelay" value="0" xmlns="" /></widget>
+  <preference name="AndroidXEnabled" value="true" />`r`n  <plugin name="cordova-plugin-tts" />`r`n  <plugin name="cordova-plugin-vibration" />`r`n<preference name="MediaPlaybackRequiresUserAction" value="false" xmlns="" /><preference name="AndroidWindowSplashScreenShowDuration" value="600" xmlns="" /><preference name="AndroidWindowSplashScreenBackground" value="#000000" xmlns="" /><preference name="ShowSplashScreenSpinner" value="false" xmlns="" /><preference name="AutoHideSplashScreen" value="true" xmlns="" /><preference name="SplashScreenDelay" value="0" xmlns="" /><preference name="AndroidWindowSplashScreenAnimatedIcon" value="resources/splash/_build/splash_animated.xml" xmlns="" /><preference name="AndroidWindowSplashScreenFadeOutDuration" value="150" xmlns="" /><preference name="AndroidWindowSplashScreenAnimationDuration" value="0" xmlns="" /></widget>
