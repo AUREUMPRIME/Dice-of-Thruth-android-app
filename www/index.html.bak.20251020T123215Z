@@ -29,45 +29,6 @@
   </style>
 <style id="last5-dice-pos-override">#last5Dice{top:calc(env(safe-area-inset-top,0px) + 12px) !important}</style>
   <script src="cordova.js"></script>
-<script>
-(function(){
-  var _Media = window.Media, _mediaList = [];
-  if(_Media){
-    window.Media = function(){ var a=[].slice.call(arguments);
-      var m = new (Function.prototype.bind.apply(_Media,[null].concat(a)));
-      try{ _mediaList.push(m); }catch(e){}
-      return m;
-    };
-    window.Media.prototype = _Media.prototype;
-  }
-  function killIntro(){
-    try{
-      document.querySelectorAll('video,audio').forEach(function(el){
-        try{ el.pause(); el.currentTime=0; el.style.display='none'; }catch(e){}
-      });
-    }catch(e){}
-    try{ if(window.Howler && typeof Howler.stop==='function'){ Howler.stop(); } }catch(e){}
-    try{
-      _mediaList.forEach(function(m){
-        try{ if(typeof m.stop==='function')     m.stop();     }catch(e){}
-        try{ if(typeof m.release==='function')  m.release();  }catch(e){}
-        try{ if(typeof m.setVolume==='function')m.setVolume(0);}catch(e){}
-      });
-    }catch(e){}
-    try{ if(window.TTS && typeof TTS.stop==='function'){ TTS.stop(); } }catch(e){}
-    try{
-      document.removeEventListener('touchstart',killIntro,true);
-      document.removeEventListener('click',killIntro,true);
-      document.removeEventListener('keydown',killIntro,true);
-    }catch(e){}
-  }
-  document.addEventListener('touchstart',killIntro,true);
-  document.addEventListener('click',     killIntro,true);
-  document.addEventListener('keydown',   killIntro,true);
-  window.__killIntro = killIntro; // botón de pánico opcional desde consola
-})();
-</script>
-<script src="js/boot-audio-guard.js"></script>
 <style id="aeon-intro-style">
 #aeon-intro{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center}
 #aeon-intro video{width:100%;height:100%;object-fit:contain;background:#000}
@@ -141,91 +102,6 @@ video::-webkit-media-controls-enclosure{ display:none !important; }
   document.addEventListener('deviceready', arm, true);
 })();
 </script>
-<!-- AEON:BOOT-KILL v1 START -->
-<script>
-(function(){
-  var KILLED=false;
-  var trackedMedia = new Set();
-
-  function stopHTML(){
-    try{
-      var nodes = document.querySelectorAll('audio,video');
-      for(var i=0;i<nodes.length;i++){
-        try{ nodes[i].pause(); nodes[i].currentTime = 0; nodes[i].muted = true; nodes[i].style.display='none'; }catch(e){}
-      }
-    }catch(e){}
-  }
-
-  function stopHowler(){
-    try{ if(window.Howler && typeof window.Howler.stop==='function'){ window.Howler.stop(); } }catch(e){}
-    try{ if(window.Howler && typeof window.Howler.unload==='function'){ window.Howler.unload(); } }catch(e){}
-  }
-
-  (function hookCordovaMedia(){
-    try{
-      if(!window.Media || !window.Media.prototype) return;
-      var p = window.Media.prototype;
-      var _play = p.play, _stop = p.stop, _release = p.release;
-      p.play = function(){ try{ trackedMedia.add(this); }catch(e){} if(KILLED){ try{ this.stop(); this.release && this.release(); }catch(e){} return; } return _play.apply(this, arguments); };
-      p.stop = function(){ try{ trackedMedia.delete(this); }catch(e){} return _stop ? _stop.apply(this, arguments) : undefined; };
-      p.release = function(){ try{ trackedMedia.delete(this); }catch(e){} return _release ? _release.apply(this, arguments) : undefined; };
-    }catch(e){}
-  })();
-
-  function stopCordovaMedia(){
-    try{ trackedMedia.forEach(function(m){ try{ m.stop(); m.release && m.release(); }catch(e){} }); trackedMedia.clear(); }catch(e){}
-    try{
-      Object.keys(window).forEach(function(k){
-        var v = window[k];
-        if(v && typeof v.stop==='function' && /Media|audio|sound|jingle/i.test(k)){
-          try{ v.stop(); v.release && v.release(); }catch(e){}
-        }
-      });
-    }catch(e){}
-  }
-
-  function armBlockers(){
-    try{
-      document.addEventListener('play', function(ev){
-        if(!KILLED) return;
-        try{ ev.target.pause(); ev.target.currentTime = 0; ev.target.muted = true; }catch(e){}
-      }, true);
-      if(window.Howl && window.Howl.prototype){
-        var hp = window.Howl.prototype, __play = hp.play;
-        hp.play = function(){ if(KILLED){ try{ this.stop(); }catch(e){} return this; } return __play.apply(this, arguments); };
-      }
-      if(window.Media && window.Media.prototype){
-        var mp = window.Media.prototype, __mplay = mp.play;
-        mp.play = function(){ if(KILLED){ try{ this.stop(); this.release && this.release(); }catch(e){} return; } return __mplay.apply(this, arguments); };
-      }
-    }catch(e){}
-  }
-
-  function killAll(){
-    if(KILLED) return;
-    KILLED = true;
-    stopHTML();
-    stopHowler();
-    stopCordovaMedia();
-  }
-
-  function onFirstUserGesture(){
-    killAll();
-    try{ document.removeEventListener('touchstart', onFirstUserGesture, true); }catch(e){}
-    try{ document.removeEventListener('click',      onFirstUserGesture, true); }catch(e){}
-    try{ document.removeEventListener('keydown',    onFirstUserGesture, true); }catch(e){}
-  }
-
-  armBlockers();
-  try{ document.addEventListener('touchstart', onFirstUserGesture, true); }catch(e){}
-  try{ document.addEventListener('click',      onFirstUserGesture, true); }catch(e){}
-  try{ document.addEventListener('keydown',    onFirstUserGesture, true); }catch(e){}
-
-  document.addEventListener('deviceready', function(){ /* listo para plugins */ }, false);
-  window.__AEON_KILL_BOOT_MEDIA = killAll; // debug manual
-})();
-</script>
-<!-- AEON:BOOT-KILL v1 END -->
 </head><body class="idle" data-build="20250919133146">
 <div id="aeon-intro" role="dialog" aria-label="Intro" aria-live="off">
   <video id="aeon-intro-video" src="res/intro/intro.mp4" playsinline autoplay muted preload="auto" poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="></video></video>
@@ -337,53 +213,6 @@ video::-webkit-media-controls-enclosure{ display:none !important; }
   }
 
   function hideIntro(){
-  // AEON HIDEINTRO MEDIA STOP v1
-  try{
-    var v=document.getElementById('aeon-intro-video');
-    if(v){ try{v.pause()}catch(e){} try{v.currentTime=0}catch(e){} try{v.style.display='none'}catch(e){} try{v.removeAttribute('src');v.load()}catch(e){} }
-    // HTMLAudio
-    try{
-      var aud=document.querySelectorAll('audio');
-      for(var i=0;i<aud.length;i++){ try{aud[i].pause()}catch(e){} try{aud[i].currentTime=0}catch(e){} try{aud[i].src=''}catch(e){} }
-    }catch(e){}
-    // Howler
-    try{ if(window.Howler&&typeof window.Howler.stop==='function'){ window.Howler.stop() } }catch(e){}
-    // Cordova Media: intenta detener cualquier objeto global con stop()/release()
-    try{
-      var k=Object.keys(window);
-      for(var j=0;j<k.length;j++){
-        var n=k[j], o=window[n];
-        if(o && (typeof o.stop==='function' || typeof o.pause==='function')){
-          if(/media|audio|sound|jingle|howl/i.test(n) || (o.getCurrentPosition&&o.play)){
-            try{ if(typeof o.stop==='function') o.stop() }catch(e){}
-            try{ if(typeof o.pause==='function') o.pause() }catch(e){}
-            try{ if(typeof o.release==='function') o.release() }catch(e){}
-          }
-        }
-      }
-    }catch(e){}
-  }catch(e){}
-  // AEON HIDEINTRO MEDIA STOP v1
-  try{
-    var v=document.getElementById('aeon-intro-video');
-    if(v){
-      try{ v.pause(); }catch(e){}
-      try{ v.currentTime=0; }catch(e){}
-      try{ v.style.display='none'; }catch(e){}
-      try{ v.removeAttribute('src'); v.load(); }catch(e){}
-    }
-    // Cordova Media (jingle principal)
-    if(window.bootMedia && typeof window.bootMedia.stop==='function'){ try{ window.bootMedia.stop(); }catch(e){} }
-    if(window.bootMedia && typeof window.bootMedia.release==='function'){ try{ window.bootMedia.release(); }catch(e){} }
-    // HTMLAudio fallback
-    if(window.bootAudio){
-      try{ window.bootAudio.pause(); }catch(e){}
-      try{ window.bootAudio.currentTime=0; }catch(e){}
-      try{ window.bootAudio.src=''; }catch(e){}
-    }
-    // Howler, si estuviera presente
-    if(window.Howler && typeof window.Howler.stop==='function'){ try{ window.Howler.stop(); }catch(e){} }
-  }catch(e){}
     var d=document.getElementById('aeon-intro');
     if(d) d.style.display='none';
     unlockTTS();
@@ -450,67 +279,5 @@ video::-webkit-media-controls-enclosure{ display:none !important; }
   window.__skipBoot = skip;
 })();
 </script>
-
-
-
-<script>
-/* STOP-INTRO-MEDIA */
-(function(){
-  function wrap(){
-    try{
-      if(typeof hideIntro !== 'function') return false;
-      var _orig = hideIntro;
-      hideIntro = function(){
-        try{
-          var A=document.getElementsByTagName('audio');
-          for(var i=0;i<A.length;i++){ try{ A[i].muted=false; A[i].pause(); A[i].currentTime=0; }catch(e){} }
-          var V=document.getElementsByTagName('video');
-          for(var j=0;j<V.length;j++){ try{ V[j].pause(); V[j].currentTime=0; V[j].style.display='none'; }catch(e){} }
-          if(window.Howler && typeof window.Howler.stop==='function'){ try{ window.Howler.stop(); }catch(e){} }
-          if(window.bootHowl && typeof window.bootHowl.stop==='function'){ try{ window.bootHowl.stop(); }catch(e){} }
-          if(window.bootMedia && typeof window.bootMedia.stop==='function'){ try{ window.bootMedia.stop(); }catch(e){} }
-          if(window.jingle && typeof window.jingle.stop==='function'){ try{ window.jingle.stop(); }catch(e){} }
-        }catch(e){}
-        return _orig.apply(this, arguments);
-      };
-      return true;
-    }catch(e){ return false; }
-  }
-  (function waitHook(){
-    if(!wrap()){ try{ setTimeout(waitHook,50); }catch(e){} }
-  })();
-})();
-</script>
-
-
-
-<!-- BOOT-STOP-MEDIA-HOOK -->
-<script>
-(function(){
-var refs=window.__bootMediaRefs=window.__bootMediaRefs||[];
-function keep(x){try{if(x&&refs.indexOf(x)<0)refs.push(x)}catch(e){}}
-try{var H=window.Howl;if(H&&!H.__bootHook){var P=function(o){var i=new H(o);keep(i);return i};P.prototype=H.prototype;try{Object.setPrototypeOf?Object.setPrototypeOf(P,H):(P.__proto__=H)}catch(e){};window.Howl=P;H.__bootHook=true}}catch(e){}
-try{var M=window.Media;if(M&&!M.__bootHook){var Q=function(){var i=new (Function.prototype.bind.apply(M,[null].concat([].slice.call(arguments))));keep(i);return i};Q.prototype=M.prototype;try{Object.setPrototypeOf?Object.setPrototypeOf(Q,M):(Q.__proto__=M)}catch(e){};window.Media=Q;M.__bootHook=true}}catch(e){}
-function stopAll(){
- try{
-  var v=document.querySelectorAll('video');for(var i=0;i<v.length;i++){try{v[i].pause();v[i].currentTime=0;v[i].style.display='none'}catch(e){}}
-  var a=document.querySelectorAll('audio');for(var j=0;j<a.length;j++){try{a[j].pause();a[j].currentTime=0;a[j].muted=true;a[j].removeAttribute('src');a[j].load()}catch(e){}}
-  if(window.Howler&&typeof window.Howler.stop==='function'){try{window.Howler.stop()}catch(e){}}
-  for(var k=0;k<refs.length;k++){var r=refs[k];
-    try{if(r&&typeof r.stop==='function')r.stop()}catch(e){}
-    try{if(r&&typeof r.unload==='function')r.unload()}catch(e){}
-    try{if(r&&typeof r.pause==='function')r.pause()}catch(e){}
-    try{if(r&&typeof r.release==='function')r.release()}catch(e){}
-  }
- }catch(e){}
-}
-function once(){stopAll();['pointerdown','touchstart','click','keydown'].forEach(function(ev){try{document.removeEventListener(ev,once,true)}catch(e){}})}
-['pointerdown','touchstart','click','keydown'].forEach(function(ev){try{document.addEventListener(ev,once,true)}catch(e){}});
-window.__stopIntroMedia=stopAll;
-})();
-</script>
-<!-- /BOOT-STOP-MEDIA-HOOK -->
-
-
 
 

@@ -29,45 +29,6 @@
   </style>
 <style id="last5-dice-pos-override">#last5Dice{top:calc(env(safe-area-inset-top,0px) + 12px) !important}</style>
   <script src="cordova.js"></script>
-<script>
-(function(){
-  var _Media = window.Media, _mediaList = [];
-  if(_Media){
-    window.Media = function(){ var a=[].slice.call(arguments);
-      var m = new (Function.prototype.bind.apply(_Media,[null].concat(a)));
-      try{ _mediaList.push(m); }catch(e){}
-      return m;
-    };
-    window.Media.prototype = _Media.prototype;
-  }
-  function killIntro(){
-    try{
-      document.querySelectorAll('video,audio').forEach(function(el){
-        try{ el.pause(); el.currentTime=0; el.style.display='none'; }catch(e){}
-      });
-    }catch(e){}
-    try{ if(window.Howler && typeof Howler.stop==='function'){ Howler.stop(); } }catch(e){}
-    try{
-      _mediaList.forEach(function(m){
-        try{ if(typeof m.stop==='function')     m.stop();     }catch(e){}
-        try{ if(typeof m.release==='function')  m.release();  }catch(e){}
-        try{ if(typeof m.setVolume==='function')m.setVolume(0);}catch(e){}
-      });
-    }catch(e){}
-    try{ if(window.TTS && typeof TTS.stop==='function'){ TTS.stop(); } }catch(e){}
-    try{
-      document.removeEventListener('touchstart',killIntro,true);
-      document.removeEventListener('click',killIntro,true);
-      document.removeEventListener('keydown',killIntro,true);
-    }catch(e){}
-  }
-  document.addEventListener('touchstart',killIntro,true);
-  document.addEventListener('click',     killIntro,true);
-  document.addEventListener('keydown',   killIntro,true);
-  window.__killIntro = killIntro; // botón de pánico opcional desde consola
-})();
-</script>
-<script src="js/boot-audio-guard.js"></script>
 <style id="aeon-intro-style">
 #aeon-intro{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center}
 #aeon-intro video{width:100%;height:100%;object-fit:contain;background:#000}
@@ -510,7 +471,5 @@ window.__stopIntroMedia=stopAll;
 })();
 </script>
 <!-- /BOOT-STOP-MEDIA-HOOK -->
-
-
 
 

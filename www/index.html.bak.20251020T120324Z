@@ -1,0 +1,185 @@
+﻿<!doctype html><html lang="en"><head><link rel="stylesheet" href="style.css?v=20250922231556">
+
+<script id="sw-kill">(function(){if(!sessionStorage.getItem('sw-cleared')&&'serviceWorker'in navigator){sessionStorage.setItem('sw-cleared','1');navigator.serviceWorker.getRegistrations().then(rs=>{Promise.all(rs.map(r=>r.unregister()));if('caches'in window){caches.keys().then(ks=>Promise.all(ks.map(k=>caches.delete(k))))}}).catch(e=>{})}})();</script>
+<script defer src="aeon_force_spanish_tts.js?v=20250922231556"></script>
+<script id="fx-sanitize">
+    /* disable duplicate binders before bundle.js?v=20250919210457 */
+    window.__holdDragSpin=2;      /* blocks app_hold2roll.js */
+    window.__hapticsInstalled=true;/* blocks legacy HAPTICS v2/v3 */
+    window.__holdHaptics=1;       /* blocks hold-haptics v5 installer */
+    /* single vib fallback (kept if device supports vibration) */
+    window.vib = window.vib || function(){try{return navigator.vibrate&&navigator.vibrate([14,18,14]);}catch(e){}};
+    /* guarantee first ring on press (Rings Lite listens to calc) */
+    window.addEventListener("pointerdown", function once(){
+      try{document.dispatchEvent(new CustomEvent("aeon:result:calc"));}catch(e){}
+      window.removeEventListener("pointerdown", once, {capture:false});
+    }, {once:true, passive:true});
+  </script>
+
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dice of Truth</title>
+
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <style>
+    #build-badge{position:fixed;left:.5rem;bottom:.5rem;font:12px/1.1 system-ui,Arial;
+      padding:.25rem .4rem;border:1px solid #999;border-radius:.4rem;background:#fff;opacity:.75;z-index:99999}
+  </style>
+<style id="last5-dice-pos-override">#last5Dice{top:calc(env(safe-area-inset-top,0px) + 12px) !important}</style>
+  <script src="cordova.js"></script>
+<style id="aeon-intro-style">
+#aeon-intro{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center}
+#aeon-intro video{width:100%;height:100%;object-fit:contain;background:#000}
+#aeon-intro .skip{position:absolute;right:16px;bottom:16px;padding:8px 12px;border-radius:12px;background:#111;color:#fff;border:1px solid #444;font:600 12px system-ui}
+</style>
+<style id="aeon-intro-css2">
+/* oculta botón de play inicial y controles en WebView */
+#aeon-intro video::-webkit-media-controls-start-playback-button{ display:none !important; }
+#aeon-intro video::-webkit-media-controls{ display:none !important; }
+video::-webkit-media-controls-enclosure{ display:none !important; }
+</style>
+</head><body class="idle" data-build="20250919133146">
+<div id="aeon-intro" role="dialog" aria-label="Intro" aria-live="off">
+  <video id="aeon-intro-video" src="res/intro/intro.mp4" playsinline autoplay muted preload="auto" poster="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="></video></video>
+  <button class="skip" id="aeon-intro-skip">SALTAR</button>
+</div>
+  <script src="aeon-bridges-pre.js"></script>
+  <!-- AEON: puente Cordova TTS/Vibration tras deviceready -->
+  <script src="aeon-bridges.js"></script>
+
+
+  <canvas id="bgfx" class="bgfx-canvas"></canvas>
+
+  <!-- BG layer (rings HUD) -->
+  <div class="bgfx">
+    <svg class="crop" viewBox="0 0 100 100" aria-hidden="true">
+      <g class="spin">
+        <circle class="ring" cx="50" cy="50" r="40"/>
+        <circle class="ring" cx="50" cy="50" r="30"/>
+        <circle class="ring" cx="50" cy="50" r="20"/>
+      </g>
+      <circle class="shock" cx="50" cy="50" r="42"/>
+    </svg>
+  </div>
+
+  <!-- MID layer (scene + die) -->
+  <div class="scene">
+    <div class="die-shell">
+      <div id="die" class="die">
+        <div class="face f1">
+          <i class="pip mid"></i>
+        </div>
+        <div class="face f2">
+          <i class="pip tl"></i><i class="pip br"></i>
+        </div>
+        <div class="face f3">
+          <i class="pip tl"></i><i class="pip mid"></i><i class="pip br"></i>
+        </div>
+        <div class="face f4">
+          <i class="pip tl"></i><i class="pip tr"></i><i class="pip bl"></i><i class="pip br"></i>
+        </div>
+        <div class="face f5">
+          <i class="pip tl"></i><i class="pip tr"></i><i class="pip bl"></i><i class="pip br"></i><i class="pip mid"></i>
+        </div>
+        <div class="face f6">
+          <i class="pip tl"></i><i class="pip tr"></i><i class="pip ml"></i><i class="pip mr"></i><i class="pip bl"></i><i class="pip br"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FNT layer (tap dots + counter + stats) -->
+  <div class="tap-dots" aria-hidden="true">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </div>
+  <div id="count" role="button" tabindex="0" aria-label="Show stats">0</div>
+
+  <div id="statsOverlay" class="statsOverlay" role="dialog" aria-modal="true">
+    <div class="statsPanel">
+      <button id="resetStats" class="reset" type="button">RESET</button>
+      <div id="bars" class="bars" aria-label="Roll frequency"></div>
+    </div>
+  </div>
+
+  <!-- Full-screen invisible roll button + tap overlay -->
+  <button id="rollBtn" aria-label="Roll"></button>
+  <div id="touchOverlay" class="touch" aria-hidden="true"></div>
+
+<canvas id="bgRnd"></canvas>
+<div id="build-badge"></div>
+
+
+
+
+<script>(function(){var b='20250914015904';
+  function v(){try{return window.BUILD_ID||new URLSearchParams(location.search).get('b')||b;}catch(e){return b;}}
+  function show(){var el=document.getElementById('build-badge'); if(el) el.textContent='BUILD '+v();}
+  if(document.readyState!=='loading') show(); else document.addEventListener('DOMContentLoaded',show);
+})();</script>
+  
+
+
+<script defer src="bundle.js?v=20250922231556"></script>
+<script defer src="last5.v4k2.js?v=20250922231556"></script>
+<script defer src="aeon_tts_preview6.js?v=20250922231556"></script>
+<script defer src="aeon_tts_extras.js?v=20250922231556"></script>
+<script defer src="aeon_last5_patch_v64.js?v=20250922231556"></script>
+<script defer src="aeon_particles_fix.js?v=20250922231556"></script>
+<script defer src="aeon_tapdots_toggle.js?v=20250922231556"></script>
+
+<script defer src="kill_particles.js?b=20251018T090147Z"></script>
+<script id="aeon-intro-script">
+(function(){
+  // Bloqueo TTS hasta que termine la intro o haya interacción
+  window.__AEON_TTS_LOCK = true;
+  function unlockTTS(){ window.__AEON_TTS_LOCK = false; }
+  function guardAEONTTS(){
+    var tries=0, t=setInterval(function(){
+      tries++;
+      if (typeof window.AEON_TTS === "function"){
+        var real = window.AEON_TTS;
+        window.AEON_TTS = function(){
+          if (window.__AEON_TTS_LOCK){ console.log("[TTS] locked during intro"); return false; }
+          return real.apply(this, arguments);
+        };
+        clearInterval(t);
+      } else if (tries>80){ clearInterval(t); }
+    },125);
+  }
+
+  function hideIntro(){
+    var d=document.getElementById('aeon-intro');
+    if(d) d.style.display='none';
+    unlockTTS();
+  }
+
+  function jingle(){
+    try{
+      var src="/android_asset/www/res/audio/jingle.mp3";
+      if (typeof Media === "function"){ var m=new Media(src,function(){},function(e){console.log("jingle error",e)}); m.play(); }
+      else { new Audio("res/audio/jingle.mp3").play().catch(()=>{}); }
+    }catch(e){ console.log("jingle fail", e); }
+  }
+
+  function start(){
+    guardAEONTTS();
+    var v=document.getElementById('aeon-intro-video');
+    if(v){ v.play().catch(()=>{}); }
+    jingle();
+    // Mantener intro 11s SIEMPRE
+    setTimeout(hideIntro, 11000);
+  }
+
+  // Salto manual desbloquea TTS
+  document.addEventListener('click', function(){ if(window.__AEON_TTS_LOCK) hideIntro(); }, {once:true, capture:true});
+  document.addEventListener('touchstart', function(){ if(window.__AEON_TTS_LOCK) hideIntro(); }, {once:true, capture:true});
+  document.addEventListener('deviceready', start, {once:true});
+  var btn = document.getElementById('aeon-intro-skip');
+  if(btn) btn.addEventListener('click', hideIntro);
+})();
+</script>
+
+
