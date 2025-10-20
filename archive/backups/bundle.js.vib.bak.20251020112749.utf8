@@ -11,19 +11,6 @@
     return realVibrate(pattern && pattern.length ? pattern : [16]);
   };
 })();
-/* AEON_VIB_COALESCE_PATCH */
-(function(){
-  if (window.__AEON_VIB_WRAP__) return; window.__AEON_VIB_WRAP__=1;
-  var realVibrate = ('vibrate' in navigator) ? navigator.vibrate.bind(navigator) : function(){return false;};
-  var __VIB_LAST = 0, COALESCE_MS = 160;
-  window.vib = function(pattern){
-    var now = (window.performance && performance.now) ? performance.now() : Date.now();
-    if (now - __VIB_LAST < COALESCE_MS) { try{ console.log('[haptics]','coalesce-vib',{since:Math.round(now-__VIB_LAST)});}catch(_){ } return false; }
-    __VIB_LAST = now;
-    try{ console.log('[haptics]','allow-vib'); }catch(_){ }
-    return realVibrate(pattern && pattern.length ? pattern : [16]);
-  };
-})();
 window.BUILD_ID=20250914041840; console.log('BUILD_ID='+20250914041840)
 window.BUILD_ID=20250914040747; console.log('BUILD_ID='+20250914040747)
 window.BUILD_ID='20250914031215'; console.log('BUILD_ID='+window.BUILD_ID)

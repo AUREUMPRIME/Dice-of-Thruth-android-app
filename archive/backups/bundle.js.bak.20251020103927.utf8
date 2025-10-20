@@ -1,29 +1,3 @@
-﻿/* AEON_VIB_COALESCE_PATCH */
-(function(){
-  if (window.__AEON_VIB_WRAP__) return; window.__AEON_VIB_WRAP__=1;
-  var realVibrate = ('vibrate' in navigator) ? navigator.vibrate.bind(navigator) : function(){return false;};
-  var __VIB_LAST = 0, COALESCE_MS = 160;
-  window.vib = function(pattern){
-    var now = (window.performance && performance.now) ? performance.now() : Date.now();
-    if (now - __VIB_LAST < COALESCE_MS) { try{ console.log('[haptics]','coalesce-vib',{since:Math.round(now-__VIB_LAST)});}catch(_){ } return false; }
-    __VIB_LAST = now;
-    try{ console.log('[haptics]','allow-vib'); }catch(_){ }
-    return realVibrate(pattern && pattern.length ? pattern : [16]);
-  };
-})();
-/* AEON_VIB_COALESCE_PATCH */
-(function(){
-  if (window.__AEON_VIB_WRAP__) return; window.__AEON_VIB_WRAP__=1;
-  var realVibrate = ('vibrate' in navigator) ? navigator.vibrate.bind(navigator) : function(){return false;};
-  var __VIB_LAST = 0, COALESCE_MS = 160;
-  window.vib = function(pattern){
-    var now = (window.performance && performance.now) ? performance.now() : Date.now();
-    if (now - __VIB_LAST < COALESCE_MS) { try{ console.log('[haptics]','coalesce-vib',{since:Math.round(now-__VIB_LAST)});}catch(_){ } return false; }
-    __VIB_LAST = now;
-    try{ console.log('[haptics]','allow-vib'); }catch(_){ }
-    return realVibrate(pattern && pattern.length ? pattern : [16]);
-  };
-})();
 window.BUILD_ID=20250914041840; console.log('BUILD_ID='+20250914041840)
 window.BUILD_ID=20250914040747; console.log('BUILD_ID='+20250914040747)
 window.BUILD_ID='20250914031215'; console.log('BUILD_ID='+window.BUILD_ID)
@@ -585,20 +559,7 @@ function buzzOnce(){
 }
 (()=>{ if(window.__holdDragSpin) return; window.__holdDragSpin=1;
   // vib shim
-  const vib = /* AEON_HAPTICS_COALESCE_PATCH */
-(function(){
-  if (window.__AEON_HC__) return; window.__AEON_HC__=1;
-  if (!('vibrate' in navigator)) return;
-  var real = navigator.vibrate.bind(navigator);
-  var __VIBE_LAST = 0, COALESCE_MS = 160;
-  navigator.vibrate = function(pattern){
-    var now = (window.performance && performance.now) ? performance.now() : Date.now();
-    if (now - __VIBE_LAST < COALESCE_MS) { try{ console.log('[haptics]','coalesce'); }catch(e){}; return false; }
-    __VIBE_LAST = now;
-    try{ console.log('[haptics]','allow'); }catch(e){}
-    return real(pattern);
-  };
-})();window.vib || (k=>{ try{
+  const vib = window.vib || (k=>{ try{
     if(!navigator.vibrate) return false;
     if(k==='press')   return navigator.vibrate([8,10,8]);
     if(k==='release') return navigator.vibrate([6,10,6]);
