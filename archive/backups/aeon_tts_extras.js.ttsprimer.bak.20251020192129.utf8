@@ -1,7 +1,7 @@
-﻿/* AEON — TTS EXTRAS v1 (fixed)
-   - Triple 6 → “La cagaste”
-   - Cada 100 tiradas → línea extra aleatoria
-   - Respeta ttsPrev_mute / ttsPrev_vol
+/* AEON — TTS EXTRAS v1
+   - If three 6s in a row: append “La cagaste”
+   - Every 100 rolls: append one random bonus line
+   - Respects ttsPrev_mute / ttsPrev_vol
    - Uninstall: window.AEON_TTS_EXTRAS?.uninstall()
 */
 (() => {
@@ -33,32 +33,25 @@
     try { speechSynthesis.speak(u); } catch {}
   }
 
-  // Primer deshabilitado: no hablar en primer tap
-  /* AEON_TTS_PRIMER_DISABLED */
+  // prime on first user gesture
+  let primed = false;
+  addEventListener("pointerdown", () => {
+    if (primed) return; primed = true;
+    try { speechSynthesis.resume(); const p = new SpeechSynthesisUtterance("uno"); p.volume = 0; speechSynthesis.speak(p); setTimeout(() => speechSynthesis.cancel(), 30); } catch {}
+  }, { once: true, passive: true });
 
-  // Todas las entradas devuelven string (homogéneo)
-  const bonusPool = [
-    () => "Te Amo Anely",
-    () => "Te Amo Mamá",
-    n => `Resultado ${n}`,
-    () => "Ustedes no hacen nada mas que jugar o que?",
-    n => (n === 6 ? "Seis. Máximo" : n === 1 ? "Uno. Mínimo" : `Valor ${n}`),
-    n => (n % 2 === 0 ? `Par ${n}` : `Impar ${n}`),
-    n => (n >= 4 ? `Alto ${n}` : `Bajo ${n}`),
-    n => (n === 6 ? "Crítico" : n === 1 ? "Pifia" : `Tirada ${n}`),
-    n => `Cayó ${n}`,
-    n => `El dado marca ${n}`,
-    () => "Que huele a caca",
-    n => `Confirmado ${n}`,
-    n => `Anota ${n}`,
-    n => `Ronda con ${n}`,
-    n => `Tu número es ${n}`,
-    n => `Resultado final ${n}`,
-    n => `Fue ${n}`,
-    n => `Número ${n}`,
-    n => `Registro ${n}`
+  const bonusLines = [
+    "Te Amo Anely",
+    "Quien quiere pico",
+    "Ustedes no hacen nada mas que jugar o que?",
+    "El Gabriel es bien culon",
+    "A patty le suda el mico",
+    "A la pepi le huele el mico",
+    "Anely tiene el culo chiquito pero caga Cerotones",
+    "A la Anita le yeden las patas",
+    "El toshi tiene las nalgas paches",
+    "Que huele a caca"
   ];
-  const pickBonus = (n) => bonusPool[Math.floor(Math.random()*bonusPool.length)](n);
 
   let streakSix = 0;
 
@@ -75,10 +68,13 @@
     let rolls = +sessionStorage.getItem(SKEY_COUNT) || 0;
     rolls++; sessionStorage.setItem(SKEY_COUNT, String(rolls));
 
-    // Solo tras resultado
+    // append after the built-in number TTS
     setTimeout(() => {
       if (streakSix === 3) { say("La cagaste"); streakSix = 0; }
-      if (rolls % 100 === 0) { say(pickBonus(n)); }
+      if (rolls % 100 === 0) {
+        const msg = bonusLines[Math.floor(Math.random() * bonusLines.length)];
+        say(msg);
+      }
     }, 60);
   }
 

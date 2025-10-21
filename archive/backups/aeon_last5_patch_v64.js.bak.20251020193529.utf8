@@ -1,4 +1,4 @@
-﻿/* AEON — last5 PATCH v6.4 (no persistence, single micro-buzz, stable ring, hide-until-first, read 5 always) */
+/* AEON — last5 PATCH v6.4 (no persistence, single micro-buzz, stable ring, hide-until-first, read 5 always) */
 (() => {
   const NS = "AEON_LAST5_V64";
   if (window[NS]?.uninstall) window[NS].uninstall();
@@ -65,7 +65,9 @@
     u.lang = (v&&v.lang) || 'es-US'; u.rate=.95; u.pitch=1.1; u.volume=Math.max(0,Math.min(1,getVol()));
     try{ speechSynthesis.speak(u); }catch{}
   };
-  let primed=false; /* AEON_TTS_PRIMER_DISABLED */
+  let primed=false; addEventListener('pointerdown',()=>{ if(primed) return; primed=true;
+    try{ speechSynthesis.resume(); const p=new SpeechSynthesisUtterance('uno'); p.volume=0;
+         speechSynthesis.speak(p); setTimeout(()=>speechSynthesis.cancel(),30);}catch{} }, {once:true, passive:false});
   if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = pickVoice;
 
   // ---------- Tap: always pulse all five positions oldest→newest; speak when value exists ----------

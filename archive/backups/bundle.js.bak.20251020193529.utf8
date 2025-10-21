@@ -1808,7 +1808,7 @@ const female=cand.filter(v=>/female|femen/i.test(v.name));const v=female[0]||can
 function speak(n){if(state.mute)return;const words=['','uno','dos','tres','cuatro','cinco','seis'];const w=words[n|0];if(!w)return;
 const u=new SpeechSynthesisUtterance(w);const v=(speechSynthesis.getVoices()||[]).find(x=>x.voiceURI===state.voiceURI)||pickVoice();
 if(v)u.voice=v;u.lang=(v&&v.lang)||'es-US';u.pitch=1.1;u.rate=0.95;u.volume=Math.max(0,Math.min(1,state.vol));try{speechSynthesis.cancel();speechSynthesis.speak(u);}catch{}}
-let primed=false;/* AEON_TTS_PRIMER_DISABLED */
+let primed=false;addEventListener('pointerdown',()=>{if(primed)return;primed=true;try{speechSynthesis.resume();const p=new SpeechSynthesisUtterance('uno');p.volume=0;speechSynthesis.speak(p);setTimeout(()=>speechSynthesis.cancel(),30);}catch{}},{once:true,passive:true});
 let tries=0,iv=setInterval(()=>{tries++;if((speechSynthesis.getVoices()||[]).length||tries>20){clearInterval(iv);pickVoice();}},150);speechSynthesis.onvoiceschanged=pickVoice;
 addEventListener('aeon:result',e=>{const n=+((e&&e.detail&&e.detail.value)||0);if(n>=1&&n<=6)speak(n);},{passive:true});
 addEventListener('aeon:result:calc',e=>{const n=+((e&&e.detail&&e.detail.value)||0);if(n>=1&&n<=6)speak(n);},{passive:true});

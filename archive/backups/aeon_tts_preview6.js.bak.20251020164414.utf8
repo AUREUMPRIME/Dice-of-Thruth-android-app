@@ -1,4 +1,4 @@
-﻿/* AEON — Console PREVIEW v6 (gray OFF) */
+/* AEON — Console PREVIEW v6 (gray OFF) */
 (()=>{(window.AEON_TTS_PREVIEW5?.uninstall?.(),window.AEON_TTS_PREVIEW4?.uninstall?.());
 const NS="AEON_TTS_PREVIEW6"; if(window[NS]?.uninstall) window[NS].uninstall();
 const SKEY={mute:"ttsPrev_mute",vol:"ttsPrev_vol"};
@@ -33,7 +33,7 @@ sound.addEventListener("change",()=>{state.mute=!sound.checked;save();},{passive
 const words=['','uno','dos','tres','cuatro','cinco','seis'];
 function pickVoice(){if(!("speechSynthesis"in window))return null;const vs=speechSynthesis.getVoices()||[];let cand=vs.filter(v=>/^es(-|_)?US/i.test(v.lang)||/Estados Unidos/i.test(v.name));if(!cand.length)cand=vs.filter(v=>/^es/i.test(v.lang));const female=cand.filter(v=>/female|femen/i.test(v.name));const v=female[0]||cand[0]||null;state.voiceURI=v?.voiceURI||"";return v}
 function speak(n){if(state.mute||!("speechSynthesis"in window))return;const w=words[n|0];if(!w)return;const u=new SpeechSynthesisUtterance(w);const v=(speechSynthesis.getVoices()||[]).find(x=>x.voiceURI===state.voiceURI)||pickVoice();if(v)u.voice=v;u.lang=(v&&v.lang)||'es-US';u.pitch=1.1;u.rate=0.95;u.volume=Math.max(0,Math.min(1,state.vol));try{speechSynthesis.cancel();speechSynthesis.speak(u)}catch(_){}}
-let primed=false;/* AEON_TTS_PRIMER_DISABLED */
+let primed=false;addEventListener("pointerdown",()=>{if(primed||!("speechSynthesis"in window))return;primed=true;try{speechSynthesis.resume();const p=new SpeechSynthesisUtterance("uno");p.volume=0;speechSynthesis.speak(p);setTimeout(()=>speechSynthesis.cancel(),30)}catch(_){}},{once:true,passive:true});
 let tries=0,iv=setInterval(()=>{tries++;if((speechSynthesis.getVoices()||[]).length||tries>20){clearInterval(iv);pickVoice();}},150);if("speechSynthesis"in window)speechSynthesis.onvoiceschanged=pickVoice;
 function onResult(e){let n=+(e?.detail?.value||0);if(!(n>=1&&n<=6)){const t=document.querySelector("#count")?.textContent||"";n=+t.replace(/\D/g,"")}if(n>=1&&n<=6)speak(n)}
 addEventListener("aeon:result",onResult,{passive:true});addEventListener("aeon:result:calc",onResult,{passive:true});
